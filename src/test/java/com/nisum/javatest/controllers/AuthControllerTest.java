@@ -142,6 +142,7 @@ public class AuthControllerTest {
     public void createUserBindError() throws Exception {
         //GIVEN
         final CreateUserRequest request = CreateUserRequest.builder()
+                .name("Klaus Thelen")
                 .email("klausthelen.com")
                 .password("PassWord%456")
                 .phones(
@@ -166,7 +167,7 @@ public class AuthControllerTest {
         verifyNoInteractions(userService);
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals(
-                "[{\"message\":\"Email should be valid\"},{\"message\":\"Name cannot be null\"}]",
+                "[{\"message\":\"Email should be valid\"}]",
                 response.getContentAsString()
         );
     }
