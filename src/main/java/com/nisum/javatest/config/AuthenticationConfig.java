@@ -19,7 +19,7 @@ public class AuthenticationConfig {
     private final UserRepository userRepository;
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
+    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception
     {
         return config.getAuthenticationManager();
     }

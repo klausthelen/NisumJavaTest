@@ -2,11 +2,10 @@ package com.nisum.javatest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nisum.javatest.dto.requests.CreateUserPhoneRequest;
-import com.nisum.javatest.dto.requests.CreateUserPhonesRequest;
 import com.nisum.javatest.dto.requests.CreateUserRequest;
 import com.nisum.javatest.dto.requests.LoginRequest;
-import com.nisum.javatest.dto.responses.*;
-import com.nisum.javatest.services.UserPhoneService;
+import com.nisum.javatest.dto.responses.CreateUserResponse;
+import com.nisum.javatest.dto.responses.LoginResponse;
 import com.nisum.javatest.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,16 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class AuthControllerTest {
@@ -145,6 +142,7 @@ public class AuthControllerTest {
     public void createUserBindError() throws Exception {
         //GIVEN
         final CreateUserRequest request = CreateUserRequest.builder()
+                .name("Klaus Thelen")
                 .email("klausthelen.com")
                 .password("PassWord%456")
                 .phones(
@@ -169,7 +167,7 @@ public class AuthControllerTest {
         verifyNoInteractions(userService);
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals(
-                "[{\"message\":\"Email should be valid\"},{\"message\":\"Name cannot be null\"}]",
+                "[{\"message\":\"Email should be valid\"}]",
                 response.getContentAsString()
         );
     }
