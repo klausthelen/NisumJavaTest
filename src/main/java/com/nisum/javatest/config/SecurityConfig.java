@@ -22,9 +22,13 @@ public class SecurityConfig {
     private final AuthenticationProvider authProvider;
 
     private static final String[] AUTH_WHITE_LIST = {
+            "/api-docs/**",
+            "/api-docs.yaml",
             "/auth/**",
-            "/swagger-resources/**",
-            "/h2-console/**"
+            "/h2-console/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**"
     };
 
     @Bean
