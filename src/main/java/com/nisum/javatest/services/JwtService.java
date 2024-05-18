@@ -1,7 +1,6 @@
 package com.nisum.javatest.services;
 
 import com.nisum.javatest.dto.requests.CreateUserRequest;
-import com.nisum.javatest.dto.requests.LoginRequest;
 import com.nisum.javatest.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -27,6 +26,8 @@ public class JwtService {
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 
+    private static final long DAY_IN_MILLISECONDS = 1000 * 60 * 24;
+
     public String generateToken(final CreateUserRequest user) {
         return getToken(new HashMap<>(), user.getEmail());
     }
@@ -41,7 +42,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userName)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
+                .setExpiration(new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS))
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -70,7 +71,7 @@ public class JwtService {
                 .getBody();
     }
 
-    public <T> T getClaim(String token, Function<Claims,T> claimsResolver)
+    private  <T> T getClaim(String token, Function<Claims,T> claimsResolver)
     {
         final Claims claims = getAllClaims(token);
         return claimsResolver.apply(claims);
