@@ -9,7 +9,6 @@ import com.nisum.javatest.models.UserPhone;
 import com.nisum.javatest.dto.requests.CreateUserRequest;
 import com.nisum.javatest.repositories.UserPhoneRepository;
 import com.nisum.javatest.repositories.UserRepository;
-import com.nisum.javatest.utils.DateTimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,6 +19,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.ZonedDateTime;
 
 
 @Service
@@ -114,7 +115,7 @@ public class UserService {
 
         final User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         final String token = jwtService.generateToken(user);
-        user.setLastLogin(DateTimeProvider.now());
+        user.setLastLogin(ZonedDateTime.now());
         user.setJwtToken(token);
         userRepository.save(user);
 
