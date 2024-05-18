@@ -23,8 +23,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -129,6 +130,7 @@ public class SecureControllerTest {
                 .phones(
                         List.of(
                                 CreateUserPhoneRequest.builder()
+                                        .number("312321")
                                         .cityCode("123")
                                         .build()
                         )
@@ -147,7 +149,7 @@ public class SecureControllerTest {
         verifyNoInteractions(userPhoneService);
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals(
-                "[{\"message\":\"Number cannot be null\"},{\"message\":\"Country Code cannot be null\"}]",
+                "[{\"message\":\"Country Code cannot be null\"}]",
                 response.getContentAsString()
         );
     }
