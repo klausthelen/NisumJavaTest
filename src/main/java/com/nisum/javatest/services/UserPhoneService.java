@@ -8,8 +8,6 @@ import com.nisum.javatest.models.UserPhone;
 import com.nisum.javatest.repositories.UserPhoneRepository;
 import com.nisum.javatest.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
