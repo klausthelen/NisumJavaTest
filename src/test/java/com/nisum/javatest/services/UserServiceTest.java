@@ -4,8 +4,8 @@ import com.nisum.javatest.dto.requests.CreateUserPhoneRequest;
 import com.nisum.javatest.dto.requests.CreateUserRequest;
 import com.nisum.javatest.dto.requests.LoginRequest;
 import com.nisum.javatest.dto.responses.CreateUserResponse;
-import com.nisum.javatest.dto.responses.ErrorResponse;
 import com.nisum.javatest.dto.responses.LoginResponse;
+import com.nisum.javatest.exceptions.UserInputException;
 import com.nisum.javatest.models.User;
 import com.nisum.javatest.models.UserPhone;
 import com.nisum.javatest.repositories.UserPhoneRepository;
@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +30,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -113,21 +113,18 @@ public class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(createdUser);
 
         // WHEN
-        final ResponseEntity<?> response = userService.createUser(request);
+        final CreateUserResponse response = userService.createUser(request);
 
         // THEN
         verify(userRepository).findByEmail("klaus@thelen.com");
         verify(userRepository).save(any(User.class));
         verify(userPhoneRepository).save(any(UserPhone.class));
         assertNotNull(response);
-        final CreateUserResponse responseBody = (CreateUserResponse) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(UUID.fromString("5db3a6cc-0b2a-4038-a45e-eb73b33a6789"), responseBody.getId());
-        assertEquals("Klaus Thelen", responseBody.getName());
-        assertEquals("klaus@thelen.com", responseBody.getEmail());
-        assertEquals(TOKEN, responseBody.getToken());
-        assertTrue(responseBody.isActive());
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(UUID.fromString("5db3a6cc-0b2a-4038-a45e-eb73b33a6789"), response.getId());
+        assertEquals("Klaus Thelen", response.getName());
+        assertEquals("klaus@thelen.com", response.getEmail());
+        assertEquals(TOKEN, response.getToken());
+        assertTrue(response.isActive());
     }
 
     @Test
@@ -149,16 +146,17 @@ public class UserServiceTest {
                 .build();
 
         // WHEN
-        final ResponseEntity<?> response = userService.createUser(request);
+        final UserInputException userInputException = assertThrows(
+                UserInputException.class, () -> userService.createUser(request));
 
         // THEN
         verifyNoInteractions(userRepository);
         verifyNoInteractions(userPhoneRepository);
-        assertNotNull(response);
-        final ErrorResponse responseBody = (ErrorResponse) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("Wrong password format. " + passwordRegexMessage, responseBody.getMessage());
-        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertNotNull(userInputException);
+        assertEquals("Wrong password format. " + passwordRegexMessage,
+                userInputException.getErrorResponse().getMessage()
+        );
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, userInputException.getHttpStatus());
     }
 
     @Test
@@ -186,17 +184,18 @@ public class UserServiceTest {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
 
         //WHEN
-        final ResponseEntity<?> response = userService.createUser(request);
+        final UserInputException userInputException = assertThrows(
+                UserInputException.class, () -> userService.createUser(request));
 
         // THEN
         verify(userRepository).findByEmail("klaus@thelen.com");
         verifyNoMoreInteractions(userPhoneRepository);
         verifyNoInteractions(userPhoneRepository);
-        assertNotNull(response);
-        final ErrorResponse responseBody = (ErrorResponse) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("The email is already registered", responseBody.getMessage());
-        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(userInputException);
+        assertEquals("The email is already registered",
+                userInputException.getErrorResponse().getMessage()
+        );
+        assertEquals(HttpStatus.CONFLICT, userInputException.getHttpStatus());
     }
 
     @Test
@@ -215,15 +214,12 @@ public class UserServiceTest {
         when(jwtService.generateToken(user)).thenReturn(TOKEN);
 
         //WHEN
-        final  ResponseEntity<?> response = userService.login(request);
+        final  LoginResponse response = userService.login(request);
 
         //THEN
         verify(userRepository).findByEmail("klaus@thelen.com");
         assertNotNull(response);
-        final LoginResponse responseBody = (LoginResponse) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(TOKEN, responseBody.getToken());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(TOKEN, response.getToken());
     }
 
     @Test
@@ -238,15 +234,16 @@ public class UserServiceTest {
                 .thenThrow(new BadCredentialsException("Invalid email or password"));
 
         //WHEN
-        final  ResponseEntity<?> response = userService.login(request);
+        final UserInputException userInputException = assertThrows(
+                UserInputException.class, () -> userService.login(request));
 
         //THEN
         verifyNoInteractions(userRepository);
-        assertNotNull(response);
-        final ErrorResponse responseBody = (ErrorResponse) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("Invalid email or password", responseBody.getMessage());
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(userInputException);
+        assertEquals("Invalid email or password",
+                userInputException.getErrorResponse().getMessage()
+        );
+        assertEquals(HttpStatus.UNAUTHORIZED, userInputException.getHttpStatus());
     }
 
 
