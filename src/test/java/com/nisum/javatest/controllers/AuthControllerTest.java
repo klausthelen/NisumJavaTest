@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -62,7 +61,7 @@ public class AuthControllerTest {
                 .token(TOKEN)
                 .build();
 
-        doReturn(new ResponseEntity<>(serviceResponse, HttpStatus.OK))
+        doReturn(serviceResponse)
                 .when(userService).login(any(LoginRequest.class));
 
         //WHEN
@@ -112,7 +111,7 @@ public class AuthControllerTest {
                 .isActive(true)
                 .build();
 
-        doReturn(new ResponseEntity<>(serviceResponse, HttpStatus.CREATED))
+        doReturn(serviceResponse)
                 .when(userService).createUser(any(CreateUserRequest.class));
 
         //WHEN

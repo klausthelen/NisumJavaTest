@@ -2,9 +2,12 @@ package com.nisum.javatest.controllers;
 
 import com.nisum.javatest.dto.requests.LoginRequest;
 import com.nisum.javatest.dto.requests.CreateUserRequest;
+import com.nisum.javatest.dto.responses.CreateUserResponse;
+import com.nisum.javatest.dto.responses.LoginResponse;
 import com.nisum.javatest.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +32,10 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
-        return userService.createUser(user);
+        return new ResponseEntity<>(
+                userService.createUser(user),
+                HttpStatus.CREATED
+        );
     }
 
     @PostMapping("/login")
@@ -40,6 +46,9 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
-        return  userService.login(loginRequest);
+        return new ResponseEntity<>(
+                userService.login(loginRequest),
+                HttpStatus.OK
+        );
     }
 }

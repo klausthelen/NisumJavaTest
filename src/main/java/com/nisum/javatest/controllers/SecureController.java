@@ -2,9 +2,11 @@ package com.nisum.javatest.controllers;
 
 import com.nisum.javatest.dto.requests.CreateUserPhonesRequest;
 import com.nisum.javatest.dto.responses.UserPhoneListResponse;
+import com.nisum.javatest.dto.responses.UserPhoneResponse;
 import com.nisum.javatest.services.UserPhoneService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +30,10 @@ public class SecureController {
     public ResponseEntity<UserPhoneListResponse> getUserPhoneList(
             @RequestHeader("Authorization") final String bearerToken
     ) {
-        return userPhoneService.getAllUserPhones(bearerToken.substring(7));
+        return new ResponseEntity<>(
+                userPhoneService.getAllUserPhones(bearerToken.substring(7)),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping("/add_phone")
@@ -40,9 +45,12 @@ public class SecureController {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
-        return userPhoneService.saveUserPhones(
-                bearerToken.substring(7),
-                request
+        return new ResponseEntity<>(
+                userPhoneService.saveUserPhones(
+                        bearerToken.substring(7),
+                        request
+                ),
+                HttpStatus.CREATED
         );
     }
 

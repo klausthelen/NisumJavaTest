@@ -74,19 +74,17 @@ public class UserPhoneServiceTest {
         );
 
         //WHEN
-        final ResponseEntity<UserPhoneListResponse> response = userPhoneService.getAllUserPhones(TOKEN);
+        final UserPhoneListResponse response = userPhoneService.getAllUserPhones(TOKEN);
 
         //THEN
         verify(userRepository).findByEmail(EMAIL);
         verify(userPhoneRepository).findAllByUser(USER);
-        assertNotNull(response.getBody());
-        final UserPhoneListResponse responseBody = response.getBody();
-        final UserPhoneResponse firstPhone = responseBody.getPhones().get(0);
+        assertNotNull(response);
+        final UserPhoneResponse firstPhone = response.getPhones().get(0);
 
         assertEquals("123456789", firstPhone.getNumber());
         assertEquals(879, firstPhone.getCityCode());
         assertEquals(147, firstPhone.getCountryCode());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
@@ -105,7 +103,7 @@ public class UserPhoneServiceTest {
                 .build();
 
         //WHEN
-        final ResponseEntity<CreateUserPhonesRequest> response =
+        final CreateUserPhonesRequest response =
                 userPhoneService.saveUserPhones(TOKEN, request);
 
         //THEN
@@ -118,9 +116,8 @@ public class UserPhoneServiceTest {
                         .user(USER)
                         .build()
         );
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(request, response.getBody());
+        assertNotNull(response);
+        assertEquals(request, response);
     }
 
 }
