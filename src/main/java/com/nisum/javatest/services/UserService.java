@@ -4,6 +4,7 @@ import com.nisum.javatest.dto.requests.LoginRequest;
 import com.nisum.javatest.dto.responses.CreateUserResponse;
 import com.nisum.javatest.dto.responses.ErrorResponse;
 import com.nisum.javatest.dto.responses.LoginResponse;
+import com.nisum.javatest.exceptions.UserInputException;
 import com.nisum.javatest.models.User;
 import com.nisum.javatest.models.UserPhone;
 import com.nisum.javatest.dto.requests.CreateUserRequest;
@@ -40,23 +41,27 @@ public class UserService {
     private String passwordRegexMessage;
 
     @Transactional
-    public ResponseEntity<?> createUser(final CreateUserRequest user) {
+    public CreateUserResponse createUser(final CreateUserRequest user) {
         if(!isValidPassword(user.getPassword())) {
-            return new ResponseEntity<>(
-                    ErrorResponse.builder()
-                            .message("Wrong password format. " + passwordRegexMessage)
-                            .build(),
-                    HttpStatus.UNPROCESSABLE_ENTITY
-            );
+            throw UserInputException.builder()
+                    .errorResponse(
+                            ErrorResponse.builder()
+                                    .message("Wrong password format. " + passwordRegexMessage)
+                                    .build()
+                    )
+                    .httpStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .build();
         }
 
         if(userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return new ResponseEntity<>(
-                    ErrorResponse.builder()
-                            .message("The email is already registered")
-                            .build(),
-                    HttpStatus.CONFLICT
-            );
+            throw UserInputException.builder()
+                    .errorResponse(
+                            ErrorResponse.builder()
+                                    .message("The email is already registered")
+                                    .build()
+                    )
+                    .httpStatus(HttpStatus.CONFLICT)
+                    .build();
         }
 
         final User createdUser = userRepository.save(
@@ -79,38 +84,33 @@ public class UserService {
                 )
         );
 
-        return new ResponseEntity<>(
-                CreateUserResponse.builder()
-                        .id(createdUser.getId())
-                        .name(createdUser.getName())
-                        .email(createdUser.getEmail())
-                        .created(createdUser.getCreated())
-                        .modified(createdUser.getModified())
-                        .lastLogin(createdUser.getLastLogin())
-                        .token(createdUser.getJwtToken())
-                        .isActive(createdUser.isActive())
-                        .build(),
-                HttpStatus.CREATED
-        );
-    }
-
-    private boolean isValidPassword(final String password) {
-        return password.matches(passwordRegex);
+        return CreateUserResponse.builder()
+                .id(createdUser.getId())
+                .name(createdUser.getName())
+                .email(createdUser.getEmail())
+                .created(createdUser.getCreated())
+                .modified(createdUser.getModified())
+                .lastLogin(createdUser.getLastLogin())
+                .token(createdUser.getJwtToken())
+                .isActive(createdUser.isActive())
+                .build();
     }
 
     @Transactional
-    public ResponseEntity<?> login(final LoginRequest request) {
+    public LoginResponse login(final LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
-        } catch (BadCredentialsException badCredentialsException) {
-            return new ResponseEntity<>(
-                    ErrorResponse.builder()
-                            .message("Invalid email or password")
-                            .build(),
-                    HttpStatus.UNAUTHORIZED
-            );
+        } catch (final BadCredentialsException badCredentialsException) {
+            throw UserInputException.builder()
+                    .errorResponse(
+                            ErrorResponse.builder()
+                                    .message("Invalid email or password")
+                                    .build()
+                    )
+                    .httpStatus(HttpStatus.UNAUTHORIZED)
+                    .build();
         }
 
         final User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
@@ -119,11 +119,12 @@ public class UserService {
         user.setJwtToken(token);
         userRepository.save(user);
 
-        return new ResponseEntity<>(
-                LoginResponse.builder()
-                        .token(token)
-                        .build(),
-                HttpStatus.OK
-        );
+        return LoginResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    private boolean isValidPassword(final String password) {
+        return password.matches(passwordRegex);
     }
 }

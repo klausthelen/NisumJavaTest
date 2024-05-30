@@ -58,7 +58,7 @@ public class SecureControllerTest {
         //GIVEN
 
         when(userPhoneService.getAllUserPhones(TOKEN)).thenReturn(
-                new ResponseEntity<>(UserPhoneListResponse.builder()
+                UserPhoneListResponse.builder()
                         .phones(
                                 List.of(
                                         UserPhoneResponse.builder()
@@ -67,9 +67,7 @@ public class SecureControllerTest {
                                                 .countryCode(456)
                                                 .build()
                                 )
-                        ).build(),
-                        HttpStatus.OK
-                )
+                        ).build()
         );
 
         //WHEN
@@ -104,7 +102,7 @@ public class SecureControllerTest {
                 .build();
 
         when(userPhoneService.saveUserPhones(eq(TOKEN), any(CreateUserPhonesRequest.class)))
-                .thenReturn(new ResponseEntity<>(request, HttpStatus.CREATED));
+                .thenReturn(request);
 
         //WHEN
         final MockHttpServletResponse response =

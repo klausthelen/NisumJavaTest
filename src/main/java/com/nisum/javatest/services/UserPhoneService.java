@@ -8,8 +8,6 @@ import com.nisum.javatest.models.UserPhone;
 import com.nisum.javatest.repositories.UserPhoneRepository;
 import com.nisum.javatest.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -22,8 +20,8 @@ public class UserPhoneService {
     private final UserPhoneRepository userPhoneRepository;
 
 
-    public ResponseEntity<UserPhoneListResponse> getAllUserPhones(final String token) {
-        return new ResponseEntity<>(UserPhoneListResponse.builder()
+    public UserPhoneListResponse getAllUserPhones(final String token) {
+        return UserPhoneListResponse.builder()
                 .phones( userPhoneRepository.findAllByUser(getUserByToken(token)).stream().map(
                                 userPhone ->
                                         UserPhoneResponse.builder()
@@ -33,11 +31,11 @@ public class UserPhoneService {
                                                 .build()
                         )
                         .toList())
-                .build(), HttpStatus.OK);
+                .build();
     }
 
-    public ResponseEntity<CreateUserPhonesRequest> saveUserPhones(final String token,
-                                                                  final CreateUserPhonesRequest request) {
+    public CreateUserPhonesRequest saveUserPhones(final String token,
+                                                  final CreateUserPhonesRequest request) {
 
         request.getPhones().forEach(
                 phone -> userPhoneRepository.save(
@@ -50,7 +48,7 @@ public class UserPhoneService {
                 )
         );
 
-        return new ResponseEntity<>(request, HttpStatus.CREATED);
+        return request;
 
     }
 

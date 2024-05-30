@@ -5,9 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
+import java.util.List;
+
 public class RequestUtils {
 
-    public static ResponseEntity<?> buildValidationErrorResponse(final BindingResult bindingResult) {
+    public static ResponseEntity<List<ErrorResponse>> buildValidationErrorResponse(
+            final BindingResult bindingResult
+    ) {
         return new ResponseEntity<>(
                 bindingResult.getAllErrors()
                         .stream()
