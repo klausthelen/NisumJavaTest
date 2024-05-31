@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +96,11 @@ public class UserPhoneServiceTest {
                                         .number("123456789")
                                         .cityCode("879")
                                         .countryCode("147")
+                                        .build(),
+                                CreateUserPhoneRequest.builder()
+                                        .number("987654")
+                                        .cityCode("369")
+                                        .countryCode("741")
                                         .build()
                         )
                 )
@@ -107,14 +111,23 @@ public class UserPhoneServiceTest {
                 userPhoneService.saveUserPhones(TOKEN, request);
 
         //THEN
-        verify(userRepository).findByEmail(EMAIL);
-        verify(userPhoneRepository).save(
-                UserPhone.builder()
-                        .number("123456789")
-                        .cityCode(879)
-                        .countryCode(147)
-                        .user(USER)
-                        .build()
+        verify(userRepository, times(1)).findByEmail(EMAIL);
+        verify(jwtService, times(1)).getUsernameFromToken(TOKEN);
+        verify(userPhoneRepository).saveAll(
+                List.of(
+                        UserPhone.builder()
+                                .number("123456789")
+                                .cityCode(879)
+                                .countryCode(147)
+                                .user(USER)
+                                .build(),
+                        UserPhone.builder()
+                                .number("987654")
+                                .cityCode(369)
+                                .countryCode(741)
+                                .user(USER)
+                                .build()
+                )
         );
         assertNotNull(response);
         assertEquals(request, response);

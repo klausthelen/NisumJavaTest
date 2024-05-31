@@ -10,6 +10,9 @@ import com.nisum.javatest.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,16 +40,20 @@ public class UserPhoneService {
     public CreateUserPhonesRequest saveUserPhones(final String token,
                                                   final CreateUserPhonesRequest request) {
 
+        final List<UserPhone> userPhones = new ArrayList<>();
+        final User user = getUserByToken(token);
         request.getPhones().forEach(
-                phone -> userPhoneRepository.save(
+                phone -> userPhones.add(
                         UserPhone.builder()
                                 .number(phone.getNumber())
                                 .cityCode(Integer.parseInt(phone.getCityCode()))
                                 .countryCode(Integer.parseInt(phone.getCountryCode()))
-                                .user(getUserByToken(token))
+                                .user(user)
                                 .build()
                 )
         );
+
+        userPhoneRepository.saveAll(userPhones);
 
         return request;
 
